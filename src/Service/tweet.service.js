@@ -15,6 +15,14 @@ const postTweet = async(payload, userId) => {
 
 const getUserTweet = async(tweetId, userId) => {
     let tweet;
+    const userObj = {}
+        const users = await userModel.find();
+        users.map(item => {
+            if (!userObj[item._id]) {
+                userObj[item._id] = item
+            }
+        });
+
     if (tweetId) {
         tweet = await tweetModel.findById(tweetId);
     }
@@ -23,11 +31,14 @@ const getUserTweet = async(tweetId, userId) => {
     }
     else{
         tweet = await tweetModel.find();
-    } 
-    tweet.map(item => { 
+    }
+    const newTweet = JSON.parse(JSON.stringify(tweet));
+    const tweets = newTweet.map(item => { 
         if (item.asset) item.asset = readFile(item.asset)
-    })   
-    return tweet;
+        item.userName = userObj[item.userId].name || userObj[item.userId].email;
+        return item;
+    })
+    return tweets;
 }
 
 const postLike = async(tweetId, userId) => {
